@@ -1,0 +1,1 @@
+Repository used to manage resources required for my [main Terraform repository](https://github.com/liam-stuart/test-terraform-aws).
