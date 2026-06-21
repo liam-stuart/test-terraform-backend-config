@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "api-repo" {
-  name                 = var.ecr_repo_name
+  name                 = var.ECR_REPOSITORY_NAME
   image_tag_mutability = "MUTABLE"
 }
 

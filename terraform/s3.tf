@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "state-bucket" {
-  bucket        = var.state_bucket_name
+  bucket        = var.STATE_BUCKET_NAME
   force_destroy = false
 }
 

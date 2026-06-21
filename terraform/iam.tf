@@ -1,8 +1,3 @@
-resource "aws_iam_openid_connect_provider" "github" {
-  url            = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
-}
-
 resource "aws_iam_role" "github_actions_role" {
   name = "github-actions-role"
   assume_role_policy = jsonencode({
@@ -11,7 +6,7 @@ resource "aws_iam_role" "github_actions_role" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.github.arn
+          Federated = var.ID_PROVIDER_ARN
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -19,7 +14,7 @@ resource "aws_iam_role" "github_actions_role" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = var.github_repo_subject
+            "token.actions.githubusercontent.com:sub" = var.REPO_SUBJECT
           }
         }
       }
@@ -46,8 +41,8 @@ data "aws_iam_policy_document" "github_actions_tf_policy" {
       "dynamodb:UntagResource"
     ]
     resources = [
-      "arn:aws:dynamodb:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.dynamodb_table_name}",
-      "arn:aws:dynamodb:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.dynamodb_table_name}/stream/*"
+      "arn:aws:dynamodb:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.TEST_TABLE_NAME}",
+      "arn:aws:dynamodb:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.TEST_TABLE_NAME}/stream/*"
     ]
   }
   statement {
@@ -139,7 +134,7 @@ data "aws_iam_policy_document" "github_actions_tf_policy" {
       "ecr:CompleteLayerUpload",
       "ecr:PutImage"
     ]
-    resources = ["arn:aws:ecr:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repo_name}"]
+    resources = ["arn:aws:ecr:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:repository/${var.ECR_REPOSITORY_NAME}"]
   }
   statement {
     effect = "Allow"
@@ -186,11 +181,10 @@ data "aws_iam_policy_document" "github_actions_tf_policy" {
       "s3:GetBucketOwnershipControls",
       "s3:PutBucketPublicAccessBlock",
       "s3:GetBucketPublicAccessBlock",
-      "s3:PutBucketEncryption",
       "s3:PutEncryptionConfiguration"
     ]
-    resources = ["arn:aws:s3:::${var.test_bucket_name}",
-    "arn:aws:s3:::${var.test_bucket_name}/*"]
+    resources = ["arn:aws:s3:::${var.TEST_BUCKET_NAME}",
+    "arn:aws:s3:::${var.TEST_BUCKET_NAME}/*"]
   }
   statement {
     effect = "Allow"
@@ -201,8 +195,8 @@ data "aws_iam_policy_document" "github_actions_tf_policy" {
       "s3:DeleteObject"
     ]
     resources = [
-      "arn:aws:s3:::${var.state_bucket_name}",
-      "arn:aws:s3:::${var.state_bucket_name}/*"
+      "arn:aws:s3:::${var.STATE_BUCKET_NAME}",
+      "arn:aws:s3:::${var.STATE_BUCKET_NAME}/*"
     ]
   }
   statement {

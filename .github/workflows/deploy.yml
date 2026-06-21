@@ -1,0 +1,62 @@
+name: Deploy AWS Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type deploy to confirm deployment'
+        required: true
+
+env:
+  AWS_REGION: "eu-west-1"
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read           
+
+jobs:
+  deploy:
+    name: Deploy AWS Infrastructure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Verify Deploy Intention
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "deploy" ]; then
+            echo "Deployment validation failed. You must type 'deploy' to proceed."
+            exit 1
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11.0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Mask AWS Account ID
+        run: |
+          echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+      - name: Terraform Deploy
+        env:
+          TF_VAR_TEST_BUCKET_NAME: ${{ secrets.TEST_BUCKET_NAME }}
+          TF_VAR_STATE_BUCKET_NAME: ${{ secrets.STATE_BUCKET_NAME }}
+          TF_VAR_TEST_TABLE_NAME: ${{ secrets.TEST_TABLE_NAME }} 
+          TF_VAR_ECR_REPOSITORY_NAME: ${{ secrets.ECR_REPOSITORY_NAME }} 
+          TF_VAR_REPO_SUBJECT: ${{ secrets.REPO_SUBJECT }}
+          TF_VAR_ID_PROVIDER_ARN: ${{ secrets.ID_PROVIDER_ARN }} 
+        run: |
+          cd terraform
+          terraform init -backend-config="bucket=${{ secrets.BACKEND_STATE_BUCKET_NAME }}"
+          terraform fmt -check
+          terraform plan -out=plan.tfplan
+          terraform apply plan.tfplan

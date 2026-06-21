@@ -1,19 +1,23 @@
-variable "github_repo_subject" {
+variable "REPO_SUBJECT" {
   type = string
 }
 
-variable "state_bucket_name" {
+variable "STATE_BUCKET_NAME" {
   type = string
 }
 
-variable "test_bucket_name" {
+variable "TEST_BUCKET_NAME" {
   type = string
 }
 
-variable "dynamodb_table_name" {
+variable "TEST_TABLE_NAME" {
   type = string
 }
 
-variable "ecr_repo_name" {
+variable "ECR_REPOSITORY_NAME" {
+  type = string
+}
+
+variable "ID_PROVIDER_ARN" {
   type = string
 }
