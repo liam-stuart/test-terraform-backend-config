@@ -1,6 +1,7 @@
 resource "aws_ecr_repository" "api-repo" {
   name                 = var.ECR_REPOSITORY_NAME
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
 }
 
 resource "aws_ecr_lifecycle_policy" "lifecycle" {

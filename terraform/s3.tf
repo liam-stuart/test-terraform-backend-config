@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "state-bucket" {
   bucket        = var.STATE_BUCKET_NAME
-  force_destroy = false
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "state_versioning" {
